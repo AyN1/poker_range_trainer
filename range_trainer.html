@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Range Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Bricolage+Grotesque:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f3ecdd;
+    --paper-deep: #e8dfca;
+    --ink: #1a1a18;
+    --ink-soft: #4a463d;
+    --ink-faint: #8a8472;
+    --rule: #c9bfa5;
+    --rule-soft: #ddd2b6;
+    --oxblood: #7e1f1f;
+    --forest: #2c5340;
+    --mustard: #9a6b15;
+    --red-card: #a82828;
+    --shadow: rgba(26,26,24,0.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #161614;
+      --paper-deep: #0f0f0d;
+      --ink: #f0e9d6;
+      --ink-soft: #b8b2a1;
+      --ink-faint: #7a7565;
+      --rule: #2f2c25;
+      --rule-soft: #232019;
+      --oxblood: #d05a5a;
+      --forest: #6cb088;
+      --mustard: #d9a64f;
+      --red-card: #d05a5a;
+      --shadow: rgba(0,0,0,0.4);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Bricolage Grotesque', system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(26,26,24,0.025) 31px, rgba(26,26,24,0.025) 32px);
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background-image: repeating-linear-gradient(0deg, transparent 0, transparent 31px, rgba(255,255,255,0.02) 31px, rgba(255,255,255,0.02) 32px); }
+  }
+  #app {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+    min-height: 100vh;
+  }
+  /* ============= MASTHEAD ============= */
+  .masthead {
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .masthead h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 28px;
+    font-style: italic;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .masthead .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  /* ============= SETTINGS BAR ============= */
+  .settings {
+    border: 1px solid var(--rule);
+    background: var(--paper-deep);
+    padding: 14px 16px;
+    margin-bottom: 28px;
+    font-size: 13px;
+  }
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .settings-header span:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+  .settings-toggle {
+    font-size: 18px;
+    line-height: 1;
+    color: var(--ink-soft);
+    transition: transform 0.2s;
+  }
+  .settings.open .settings-toggle { transform: rotate(45deg); }
+  .settings-body {
+    display: none;
+    padding-top: 14px;
+    margin-top: 12px;
+    border-top: 1px dashed var(--rule);
+  }
+  .settings.open .settings-body { display: block; }
+  .settings-row {
+    margin-bottom: 14px;
+  }
+  .settings-row:last-child { margin-bottom: 0; }
+  .settings-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pill {
+    border: 1px solid var(--rule);
+    background: var(--paper);
+    color: var(--ink-soft);
+    padding: 5px 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.12s;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pill:hover { border-color: var(--ink-soft); }
+  .pill.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--rule);
+    color: var(--oxblood);
+    padding: 5px 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .reset-btn:hover { background: var(--oxblood); color: var(--paper); border-color: var(--oxblood); }
+  /* ============= CONTEXT BAR ============= */
+  .context {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 36px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .context-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-bottom: 4px;
+  }
+  .context-value {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .context-block { flex: 1; }
+  .context-block:last-child { text-align: right; }
+  /* ============= CARDS ============= */
+  .card-stage {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin: 24px 0 36px;
+    perspective: 1200px;
+  }
+  .card {
+    width: 110px;
+    height: 154px;
+    background: #faf6ec;
+    border: 1.5px solid #1a1a18;
+    border-radius: 6px;
+    box-shadow:
+      0 1px 0 rgba(26,26,24,0.15),
+      0 8px 22px var(--shadow);
+    position: relative;
+    color: #1a1a18;
+    animation: dealIn 0.45s cubic-bezier(.2,.7,.3,1) backwards;
+  }
+  .card:first-child { animation-delay: 0s; transform: rotate(-2deg); }
+  .card:last-child { animation-delay: 0.08s; transform: rotate(2deg); }
+  @keyframes dealIn {
+    0%   { transform: translateY(-30px) rotate(-15deg); opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .card.red { color: var(--red-card); }
+  .card .corner {
+    position: absolute;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1;
+    text-align: center;
+    width: 22px;
+  }
+  .card .corner-suit {
+    font-size: 16px;
+    line-height: 1;
+    margin-top: 1px;
+  }
+  .card .tl { top: 8px; left: 9px; }
+  .card .br { bottom: 8px; right: 9px; transform: rotate(180deg); }
+  .card .center-suit {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 56px;
+    line-height: 1;
+  }
+  .hand-label {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 28px;
+  }
+  /* ============= ACTION BUTTONS ============= */
+  .actions {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .action-btn {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    padding: 14px 18px;
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.08s, background 0.12s;
+  }
+  .action-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .action-btn:active { transform: translateY(1px); }
+  .action-btn .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-faint);
+    border: 1px solid var(--rule);
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .action-btn:hover .key {
+    color: var(--paper);
+    border-color: var(--paper);
+  }
+  /* ============= FEEDBACK ============= */
+  .feedback {
+    border: 1.5px solid var(--ink);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    animation: fadeUp 0.35s cubic-bezier(.2,.7,.3,1) backwards;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .feedback.correct { border-color: var(--forest); background: color-mix(in srgb, var(--forest) 7%, var(--paper)); }
+  .feedback.wrong   { border-color: var(--oxblood); background: color-mix(in srgb, var(--oxblood) 7%, var(--paper)); }
+  .feedback-verdict {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 15px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .feedback.correct .feedback-verdict { color: var(--forest); }
+  .feedback.wrong   .feedback-verdict { color: var(--oxblood); }
+  .feedback-answer {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 500;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .feedback-detail {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .next-btn {
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1.5px solid var(--ink);
+    padding: 14px 18px;
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .next-btn .key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--paper);
+    border: 1px solid var(--paper);
+    padding: 2px 7px;
+    border-radius: 3px;
+    opacity: 0.7;
+  }
+  /* ============= FOOTER STATS ============= */
+  .footer-stats {
+    margin-top: 32px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--rule);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .stat-block {
+    text-align: center;
+  }
+  .stat-block .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-block .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+  }
+  /* ============= MASTERY HEATMAP ============= */
+  .mastery-section {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--rule);
+  }
+  .mastery-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .mastery-grid {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 1px;
+    max-width: 280px;
+  }
+  .mastery-cell {
+    aspect-ratio: 1;
+    background: var(--rule-soft);
+  }
+  .mastery-cell.box-1 { background: color-mix(in srgb, var(--oxblood) 30%, var(--paper)); }
+  .mastery-cell.box-2 { background: color-mix(in srgb, var(--mustard) 35%, var(--paper)); }
+  .mastery-cell.box-3 { background: color-mix(in srgb, var(--mustard) 50%, var(--paper)); }
+  .mastery-cell.box-4 { background: color-mix(in srgb, var(--forest) 35%, var(--paper)); }
+  .mastery-cell.box-5 { background: color-mix(in srgb, var(--forest) 60%, var(--paper)); }
+  .mastery-legend {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+  }
+  .mastery-swatch {
+    width: 10px; height: 10px; display: inline-block; vertical-align: middle;
+  }
+  /* ============= LOADING / EMPTY ============= */
+  .loading {
+    text-align: center;
+    padding: 60px 0;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+  }
+  /* ============= ACCESSIBILITY ============= */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  /* ============= MOBILE ============= */
+  @media (max-width: 480px) {
+    #app { padding: 20px 16px 60px; }
+    .masthead h1 { font-size: 24px; }
+    .card { width: 90px; height: 126px; }
+    .card .corner { font-size: 18px; }
+    .card .center-suit { font-size: 44px; }
+    .footer-stats { grid-template-columns: repeat(2, 1fr); gap: 20px 16px; }
+    .action-btn { padding: 12px 14px; font-size: 16px; }
+    .mastery-grid { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <h2 class="sr-only">Poker preflop range trainer with spaced repetition</h2>
+
+  <header class="masthead">
+    <h1>Range Trainer</h1>
+    <div class="meta" id="meta">low-stakes live · 100bb</div>
+  </header>
+
+  <section class="settings" id="settings">
+    <div class="settings-header" id="settings-toggle">
+      <span>Filter drill</span>
+      <span class="settings-toggle">+</span>
+    </div>
+    <div class="settings-body">
+      <div class="settings-row">
+        <div class="settings-label">Positions</div>
+        <div class="pill-group" id="pos-pills"></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">Scenarios</div>
+        <div class="pill-group" id="mode-pills"></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">Data</div>
+        <button class="reset-btn" id="reset-btn">Reset all progress</button>
+      </div>
+    </div>
+  </section>
+
+  <main id="main"></main>
+</div>
+
+<script>
+// =========================================================================
+// RANGE DATA — must match the chart conventions (low-stakes live, tight)
+// =========================================================================
+
+const RANGES = {
+  open: {
+    ep: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','ATs','KQs','KJs','QJs','JTs','AKo','AQo'],
+    mp: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A9s','A5s','A4s','KQs','KJs','KTs','QJs','QTs','JTs','J9s','T9s','98s','AKo','AQo','AJo','KQo'],
+    co: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','86s','76s','65s','54s','AKo','AQo','AJo','ATo','KQo','KJo','QJo'],
+    btn: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','K4s','K3s','K2s','QJs','QTs','Q9s','Q8s','Q7s','Q6s','JTs','J9s','J8s','J7s','T9s','T8s','T7s','98s','97s','96s','87s','86s','75s','76s','65s','54s','64s','AKo','AQo','AJo','ATo','A9o','A8o','A7o','A6o','A5o','KQo','KJo','KTo','K9o','QJo','QTo','Q9o','JTo','J9o','T9o','98o'],
+    sb: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','44','33','22','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A6s','A5s','A4s','A3s','A2s','KQs','KJs','KTs','K9s','K8s','K7s','K6s','K5s','QJs','QTs','Q9s','Q8s','JTs','J9s','J8s','T9s','T8s','98s','97s','87s','76s','65s','54s','AKo','AQo','AJo','ATo','A9o','KQo','KJo','KTo','QJo','QTo','JTo']
+  },
+  vsraise: {
+    ep: { threebet: ['AA','KK','QQ','JJ','AKs','AKo'], bluff: [], call: ['TT','99','AQs','AJs','KQs'] },
+    mp: { threebet: ['AA','KK','QQ','JJ','AKs','AQs','AKo'], bluff: [], call: ['TT','99','88','77','AQo','AJs','ATs','KQs','KJs','QJs','JTs','T9s'] },
+    co: { threebet: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','AKo','AQo'], bluff: ['A5s'], call: ['99','88','77','66','55','ATs','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','87s','76s'] },
+    btn: { threebet: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','AKo','AQo','KQs'], bluff: ['A5s','A4s'], call: ['88','77','66','55','44','33','22','ATs','A9s','KJs','KTs','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','76s','65s','54s','AJo','KQo'] },
+    sb: { threebet: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','KQs','AKo','AQo'], bluff: ['A5s','A4s'], call: ['99','88','77','66','55','ATs','KJs','QJs','JTs'] }
+  },
+  vslimp: {
+    ep: ['AA','KK','QQ','JJ','TT','AKs','AQs','AJs','KQs','AKo','AQo'],
+    mp: ['AA','KK','QQ','JJ','TT','99','AKs','AQs','AJs','ATs','KQs','KJs','QJs','AKo','AQo','AJo'],
+    co: ['AA','KK','QQ','JJ','TT','99','88','77','AKs','AQs','AJs','ATs','A9s','A5s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','87s','AKo','AQo','AJo','ATo','KQo','KJo','QJo'],
+    btn: ['AA','KK','QQ','JJ','TT','99','88','77','66','55','AKs','AQs','AJs','ATs','A9s','A8s','A7s','A5s','A4s','KQs','KJs','KTs','K9s','QJs','QTs','Q9s','JTs','J9s','T9s','98s','87s','76s','65s','AKo','AQo','AJo','ATo','A9o','KQo','KJo','KTo','QJo','QTo','JTo'],
+    sb: ['AA','KK','QQ','JJ','TT','99','88','77','66','AKs','AQs','AJs','ATs','A9s','A5s','A4s','KQs','KJs','KTs','QJs','QTs','JTs','T9s','98s','87s','76s','AKo','AQo','AJo','ATo','KQo','KJo','QJo']
+  }
+};
+
+const POSITIONS = [
+  { id: 'ep', label: 'EP' },
+  { id: 'mp', label: 'MP' },
+  { id: 'co', label: 'CO' },
+  { id: 'btn', label: 'BTN' },
+  { id: 'sb', label: 'SB' }
+];
+
+const MODES = [
+  { id: 'open', label: 'Open' },
+  { id: 'vsraise', label: 'Vs raise' },
+  { id: 'vslimp', label: 'Vs limp' }
+];
+
+const POS_FULL = {
+  ep: 'Early position (UTG)',
+  mp: 'Middle / hijack',
+  co: 'Cutoff',
+  btn: 'Button',
+  sb: 'Small blind'
+};
+
+const MODE_FULL = {
+  open: 'Folded to you',
+  vsraise: 'Facing a raise',
+  vslimp: 'Facing a limper'
+};
+
+const RANKS = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+
+function allHands() {
+  const hands = [];
+  for (let i = 0; i < 13; i++) {
+    for (let j = 0; j < 13; j++) {
+      if (i === j) hands.push(RANKS[i] + RANKS[j]);
+      else if (i < j) hands.push(RANKS[i] + RANKS[j] + 's');
+      else hands.push(RANKS[j] + RANKS[i] + 'o');
+    }
+  }
+  return [...new Set(hands)];
+}
+
+function getCorrectAction(hand, position, mode) {
+  if (mode === 'open') {
+    return RANGES.open[position].includes(hand) ? 'raise' : 'fold';
+  }
+  if (mode === 'vsraise') {
+    const r = RANGES.vsraise[position];
+    if (r.threebet.includes(hand)) return 'threebet_value';
+    if (r.bluff.includes(hand)) return 'threebet_bluff';
+    if (r.call.includes(hand)) return 'call';
+    return 'fold';
+  }
+  if (mode === 'vslimp') {
+    return RANGES.vslimp[position].includes(hand) ? 'iso' : 'fold';
+  }
+  return 'fold';
+}
+
+const ACTION_LABELS = {
+  fold: 'Fold',
+  raise: 'Raise / open',
+  iso: 'Isolate',
+  call: 'Call',
+  threebet_value: '3-bet (value)',
+  threebet_bluff: '3-bet (bluff)'
+};
+
+const ACTION_KEYS = {
+  fold: 'F',
+  raise: 'R',
+  iso: 'R',
+  call: 'C',
+  threebet_value: '3',
+  threebet_bluff: 'B'
+};
+
+// Detail strings for feedback. Composed from hand-class + position context.
+function getExplanation(hand, position, mode, action) {
+  const handClass = classifyHand(hand);
+  const posCtx = posContext(position, mode);
+
+  if (action === 'fold') {
+    if (handClass === 'pair-low') return 'Set-mining math is too thin from this seat — implied odds and position favor a fold.';
+    if (handClass === 'ax-mid' || handClass === 'ax-low') return 'Mid/wheel offsuit Ax is dominated too often. Suited siblings get in via blocker leverage; offsuit does not.';
+    if (handClass === 'broadway-offsuit') return 'Trouble hand — flops second pair too often and cannot fold to pressure.';
+    if (handClass === 'connector-suited') return 'Out of range from here. Speculative hands need late position to realize equity.';
+    return 'Outside the value range from this position.';
+  }
+  if (action === 'raise' || action === 'iso') {
+    if (handClass === 'pair-premium') return 'Premium pair — always opens, always isolates.';
+    if (handClass === 'pair-mid' || handClass === 'pair-low') return 'Set-mining hand with deep stacks. Opens for the implied odds and the equity vs broadway calls.';
+    if (handClass === 'ax-suited-strong') return 'Strong suited Ax — value hand with kicker leverage and nut flush potential.';
+    if (handClass === 'ax-suited-wheel') return 'Wheel Ax — opens for blocker effect and nut straight + flush potential.';
+    if (handClass === 'ax-suited-mid') return 'Mid suited Ax — opens for nut flush draws and steal equity in late position.';
+    if (handClass === 'broadway-suited') return 'Suited broadway — strong opener, makes strong top pairs and flushes.';
+    if (handClass === 'broadway-offsuit') return 'Strong offsuit broadway — opens, but tightens up against early-position resistance.';
+    if (handClass === 'connector-suited') return 'Suited connector — opens from late position for postflop playability and steal equity.';
+    if (handClass === 'gapper-suited') return 'Suited gapper — opens from steal positions for blocker and flush equity.';
+    return mode === 'vslimp' ? 'In the iso range — sizing 5–6bb plus 1bb per limper.' : 'In the open range from this seat.';
+  }
+  if (action === 'threebet_value') {
+    return 'Linear value 3-bet — gets called by worse, has range advantage on most flops.';
+  }
+  if (action === 'threebet_bluff') {
+    return 'Selective 3-bet bluff: nut blocker plus suited playability. Drop against pure calling stations.';
+  }
+  if (action === 'call') {
+    if (handClass === 'pair-mid' || handClass === 'pair-low') return 'Set-mining flat — needs deep stacks and position. Folds the 88% of the time you miss.';
+    if (handClass === 'ax-suited-strong') return 'Suited Ax with kicker leverage — flats in position, makes strong top pairs and nut flushes.';
+    if (handClass === 'connector-suited' || handClass === 'gapper-suited') return 'Speculative flat — playability hand that needs position to realize equity.';
+    if (handClass === 'broadway-suited') return 'Suited broadway flat — too good to fold, not quite a 3-bet against a tight opener.';
+    return 'In the flatting range — strong enough to play, not strong enough to 3-bet for value.';
+  }
+  return '';
+}
+
+function classifyHand(hand) {
+  if (hand.length === 2) {
+    if (['AA','KK','QQ','JJ'].includes(hand)) return 'pair-premium';
+    if (['TT','99','88','77'].includes(hand)) return 'pair-mid';
+    return 'pair-low';
+  }
+  const r1 = hand[0], r2 = hand[1], suit = hand[2];
+  if (r1 === 'A' && suit === 's') {
+    if (['K','Q','J','T'].includes(r2)) return 'ax-suited-strong';
+    if (['9','8','7','6'].includes(r2)) return 'ax-suited-mid';
+    return 'ax-suited-wheel';
+  }
+  if (r1 === 'A' && suit === 'o') {
+    if (['K','Q','J','T','9'].includes(r2)) return 'broadway-offsuit';
+    if (['8','7','6'].includes(r2)) return 'ax-mid';
+    return 'ax-low';
+  }
+  const broadway = ['A','K','Q','J','T'];
+  if (broadway.includes(r1) && broadway.includes(r2)) {
+    return suit === 's' ? 'broadway-suited' : 'broadway-offsuit';
+  }
+  const idx1 = RANKS.indexOf(r1), idx2 = RANKS.indexOf(r2);
+  const gap = Math.abs(idx1 - idx2);
+  if (suit === 's' && gap === 1) return 'connector-suited';
+  if (suit === 's' && gap <= 3) return 'gapper-suited';
+  return 'other';
+}
+
+function posContext(position, mode) {
+  return POS_FULL[position] + ' · ' + MODE_FULL[mode];
+}
+
+// =========================================================================
+// PERSISTENT STORAGE — Leitner spaced repetition
+// =========================================================================
+
+const STORAGE_KEY = 'range_trainer_v1';
+const ALL_HANDS = allHands();
+
+const BOX_WEIGHTS = { 1: 16, 2: 8, 3: 4, 4: 2, 5: 1 };
+
+const defaultProgress = () => ({
+  cards: {},          // key: "hand|pos|mode" -> { box, correct, total, lastSeen }
+  totalReviews: 0,
+  totalCorrect: 0,
+  sessionReviews: 0,  // resets on page load
+  streak: 0
+});
+
+let progress = defaultProgress();
+
+async function loadProgress() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) {
+      const parsed = JSON.parse(result.value);
+      progress = { ...defaultProgress(), ...parsed, sessionReviews: 0 };
+    }
+  } catch (e) {
+    // Key not found — first session, leave defaults
+  }
+}
+
+async function saveProgress() {
+  try {
+    await window.storage.set(STORAGE_KEY, JSON.stringify(progress));
+  } catch (e) {
+    console.error('Save failed:', e);
+  }
+}
+
+async function resetProgress() {
+  progress = defaultProgress();
+  try { await window.storage.delete(STORAGE_KEY); } catch (e) {}
+}
+
+function cardKey(hand, pos, mode) {
+  return hand + '|' + pos + '|' + mode;
+}
+
+function getCardState(hand, pos, mode) {
+  const k = cardKey(hand, pos, mode);
+  return progress.cards[k] || { box: 1, correct: 0, total: 0, lastSeen: 0 };
+}
+
+function updateCard(hand, pos, mode, correct) {
+  const k = cardKey(hand, pos, mode);
+  const c = getCardState(hand, pos, mode);
+  c.total += 1;
+  if (correct) {
+    c.correct += 1;
+    c.box = Math.min(5, c.box + 1);
+  } else {
+    c.box = 1;
+  }
+  c.lastSeen = Date.now();
+  progress.cards[k] = c;
+  progress.totalReviews += 1;
+  progress.sessionReviews += 1;
+  if (correct) {
+    progress.totalCorrect += 1;
+    progress.streak += 1;
+  } else {
+    progress.streak = 0;
+  }
+}
+
+// =========================================================================
+// CARD SELECTION — weighted by SR box
+// =========================================================================
+
+let selectedPositions = ['ep','mp','co','btn','sb'];
+let selectedModes = ['open','vsraise','vslimp'];
+let lastCardKey = null;
+
+function pickNextCard() {
+  const pool = [];
+  for (const hand of ALL_HANDS) {
+    for (const pos of selectedPositions) {
+      for (const mode of selectedModes) {
+        const k = cardKey(hand, pos, mode);
+        if (k === lastCardKey) continue; // avoid immediate repeat
+        const c = getCardState(hand, pos, mode);
+        const weight = BOX_WEIGHTS[c.box] || 1;
+        pool.push({ hand, pos, mode, weight });
+      }
+    }
+  }
+  if (pool.length === 0) return null;
+  const total = pool.reduce((s, x) => s + x.weight, 0);
+  let r = Math.random() * total;
+  for (const item of pool) {
+    r -= item.weight;
+    if (r <= 0) return item;
+  }
+  return pool[pool.length - 1];
+}
+
+// =========================================================================
+// RENDER — quiz, feedback, mastery
+// =========================================================================
+
+const SUITS = ['s','h','d','c'];
+const SUIT_GLYPHS = { s: '♠', h: '♥', d: '♦', c: '♣' };
+
+function pickSuits(hand) {
+  // Returns [suitOfFirstCard, suitOfSecondCard]
+  if (hand.length === 2) {
+    // pair: two different suits
+    const a = SUITS[Math.floor(Math.random() * 4)];
+    let b = SUITS[Math.floor(Math.random() * 4)];
+    while (b === a) b = SUITS[Math.floor(Math.random() * 4)];
+    return [a, b];
+  }
+  if (hand.endsWith('s')) {
+    const s = SUITS[Math.floor(Math.random() * 4)];
+    return [s, s];
+  }
+  // offsuit
+  const a = SUITS[Math.floor(Math.random() * 4)];
+  let b = SUITS[Math.floor(Math.random() * 4)];
+  while (b === a) b = SUITS[Math.floor(Math.random() * 4)];
+  return [a, b];
+}
+
+function renderCard(rank, suit) {
+  const isRed = (suit === 'h' || suit === 'd');
+  const glyph = SUIT_GLYPHS[suit];
+  return `
+    <div class="card${isRed ? ' red' : ''}">
+      <div class="corner tl">${rank}<div class="corner-suit">${glyph}</div></div>
+      <div class="center-suit">${glyph}</div>
+      <div class="corner br">${rank}<div class="corner-suit">${glyph}</div></div>
+    </div>
+  `;
+}
+
+let currentQ = null;
+
+function renderQuiz() {
+  const main = document.getElementById('main');
+  const card = pickNextCard();
+
+  if (!card) {
+    main.innerHTML = `<div class="loading">Select at least one position and scenario above.</div>`;
+    return;
+  }
+
+  const { hand, pos, mode } = card;
+  const r1 = hand[0];
+  const r2 = hand.length === 2 ? hand[1] : hand[1];
+  const suits = pickSuits(hand);
+  const correctAction = getCorrectAction(hand, pos, mode);
+
+  currentQ = { hand, pos, mode, correctAction };
+
+  // Action buttons depend on mode
+  let actions = [];
+  if (mode === 'open') actions = ['fold','raise'];
+  else if (mode === 'vslimp') actions = ['fold','iso'];
+  else if (mode === 'vsraise') actions = ['fold','call','threebet_value','threebet_bluff'];
+
+  const handLabel = hand.length === 2
+    ? `Pair of ${rankWord(r1)}s`
+    : `${rankWord(r1)}-${rankWord(r2)} ${hand.endsWith('s') ? 'suited' : 'offsuit'}`;
+
+  main.innerHTML = `
+    <div class="context">
+      <div class="context-block">
+        <div class="context-label">Position</div>
+        <div class="context-value">${POS_FULL[pos]}</div>
+      </div>
+      <div class="context-block">
+        <div class="context-label">Action</div>
+        <div class="context-value">${MODE_FULL[mode]}</div>
+      </div>
+    </div>
+
+    <div class="card-stage">
+      ${renderCard(r1, suits[0])}
+      ${renderCard(r2, suits[1])}
+    </div>
+    <div class="hand-label">${handLabel}</div>
+
+    <div class="actions">
+      ${actions.map(a => `
+        <button class="action-btn" data-action="${a}">
+          <span>${ACTION_LABELS[a]}</span>
+          <span class="key">${ACTION_KEYS[a]}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  document.querySelectorAll('.action-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(btn.dataset.action));
+  });
+
+  updateMeta();
+}
+
+function rankWord(r) {
+  return { A:'A', K:'K', Q:'Q', J:'J', T:'10', '9':'9','8':'8','7':'7','6':'6','5':'5','4':'4','3':'3','2':'2' }[r];
+}
+
+async function handleAnswer(action) {
+  if (!currentQ) return;
+  const { hand, pos, mode, correctAction } = currentQ;
+  const correct = (action === correctAction);
+  updateCard(hand, pos, mode, correct);
+  lastCardKey = cardKey(hand, pos, mode);
+  await saveProgress();
+  renderFeedback(action);
+}
+
+function renderFeedback(userAction) {
+  const { hand, pos, mode, correctAction } = currentQ;
+  const correct = (userAction === correctAction);
+  const main = document.getElementById('main');
+
+  const verdict = correct ? '✓ Correct' : '✗ Off';
+  const cls = correct ? 'correct' : 'wrong';
+
+  let answerLine;
+  if (correct) {
+    answerLine = `${ACTION_LABELS[correctAction]}.`;
+  } else {
+    answerLine = `${ACTION_LABELS[correctAction]} — not ${ACTION_LABELS[userAction]}.`;
+  }
+
+  const detail = getExplanation(hand, pos, mode, correctAction);
+
+  // Keep the question elements visible above the feedback for context
+  const r1 = hand[0];
+  const r2 = hand.length === 2 ? hand[1] : hand[1];
+  const suits = pickSuits(hand);
+  const handLabel = hand.length === 2
+    ? `Pair of ${rankWord(r1)}s`
+    : `${rankWord(r1)}-${rankWord(r2)} ${hand.endsWith('s') ? 'suited' : 'offsuit'}`;
+
+  main.innerHTML = `
+    <div class="context">
+      <div class="context-block">
+        <div class="context-label">Position</div>
+        <div class="context-value">${POS_FULL[pos]}</div>
+      </div>
+      <div class="context-block">
+        <div class="context-label">Action</div>
+        <div class="context-value">${MODE_FULL[mode]}</div>
+      </div>
+    </div>
+
+    <div class="card-stage">
+      ${renderCard(r1, suits[0])}
+      ${renderCard(r2, suits[1])}
+    </div>
+    <div class="hand-label">${handLabel}</div>
+
+    <div class="feedback ${cls}">
+      <div class="feedback-verdict">${verdict}</div>
+      <div class="feedback-answer">${answerLine}</div>
+      <div class="feedback-detail">${detail}</div>
+    </div>
+
+    <button class="next-btn" id="next-btn">
+      <span>Next hand</span>
+      <span class="key">SPACE</span>
+    </button>
+  `;
+
+  document.getElementById('next-btn').addEventListener('click', renderQuiz);
+  updateMeta();
+}
+
+function updateMeta() {
+  const total = progress.totalReviews;
+  const correct = progress.totalCorrect;
+  const acc = total === 0 ? 0 : Math.round((correct / total) * 100);
+  document.getElementById('meta').textContent = `${acc}% acc · ${total} reviews · streak ${progress.streak}`;
+  renderMastery();
+}
+
+function renderMastery() {
+  // Append mastery section to #main if not present, else update
+  let section = document.getElementById('mastery-section');
+  if (!section) {
+    section = document.createElement('div');
+    section.id = 'mastery-section';
+    section.className = 'mastery-section';
+    document.getElementById('main').appendChild(section);
+  }
+
+  // Compute average box for each hand across selected positions/modes
+  const handStats = {};
+  for (const hand of ALL_HANDS) {
+    const boxes = [];
+    for (const pos of selectedPositions) {
+      for (const mode of selectedModes) {
+        const c = getCardState(hand, pos, mode);
+        if (c.total > 0) boxes.push(c.box);
+      }
+    }
+    if (boxes.length === 0) {
+      handStats[hand] = 0;
+    } else {
+      handStats[hand] = Math.round(boxes.reduce((s,x) => s+x, 0) / boxes.length);
+    }
+  }
+
+  // Footer stats
+  const totalSeen = Object.values(progress.cards).filter(c => c.total > 0).length;
+  const masteredCount = Object.values(progress.cards).filter(c => c.box >= 4).length;
+  const totalAcc = progress.totalReviews === 0 ? 0 : Math.round((progress.totalCorrect / progress.totalReviews) * 100);
+
+  // Build grid
+  let grid = '';
+  for (let i = 0; i < 13; i++) {
+    for (let j = 0; j < 13; j++) {
+      let hand;
+      if (i === j) hand = RANKS[i] + RANKS[j];
+      else if (i < j) hand = RANKS[i] + RANKS[j] + 's';
+      else hand = RANKS[j] + RANKS[i] + 'o';
+      const box = handStats[hand] || 0;
+      const cls = box > 0 ? `box-${box}` : '';
+      grid += `<div class="mastery-cell ${cls}" title="${hand} — box ${box}"></div>`;
+    }
+  }
+
+  section.innerHTML = `
+    <div class="footer-stats">
+      <div class="stat-block">
+        <div class="stat-num">${progress.totalReviews}</div>
+        <div class="stat-label">total<br>reviews</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">${totalAcc}%</div>
+        <div class="stat-label">overall<br>accuracy</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">${totalSeen}</div>
+        <div class="stat-label">cards<br>seen</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-num">${masteredCount}</div>
+        <div class="stat-label">cards<br>mastered</div>
+      </div>
+    </div>
+
+    <div class="mastery-section">
+      <div class="mastery-title">
+        <span>Mastery map · selected drill</span>
+        <span>${selectedPositions.length}p × ${selectedModes.length}s</span>
+      </div>
+      <div class="mastery-grid">${grid}</div>
+      <div class="mastery-legend">
+        <span><span class="mastery-swatch" style="background: var(--rule-soft)"></span> unseen</span>
+        <span><span class="mastery-swatch" style="background: color-mix(in srgb, var(--oxblood) 30%, var(--paper))"></span> learning</span>
+        <span><span class="mastery-swatch" style="background: color-mix(in srgb, var(--mustard) 50%, var(--paper))"></span> known</span>
+        <span><span class="mastery-swatch" style="background: color-mix(in srgb, var(--forest) 60%, var(--paper))"></span> mastered</span>
+      </div>
+    </div>
+  `;
+}
+
+// =========================================================================
+// SETTINGS
+// =========================================================================
+
+function renderSettings() {
+  const posPills = document.getElementById('pos-pills');
+  posPills.innerHTML = POSITIONS.map(p =>
+    `<button class="pill ${selectedPositions.includes(p.id) ? 'active' : ''}" data-pos="${p.id}">${p.label}</button>`
+  ).join('');
+  posPills.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.pos;
+      if (selectedPositions.includes(id)) {
+        if (selectedPositions.length > 1) {
+          selectedPositions = selectedPositions.filter(x => x !== id);
+        }
+      } else {
+        selectedPositions.push(id);
+      }
+      renderSettings();
+      renderQuiz();
+    });
+  });
+
+  const modePills = document.getElementById('mode-pills');
+  modePills.innerHTML = MODES.map(m =>
+    `<button class="pill ${selectedModes.includes(m.id) ? 'active' : ''}" data-mode="${m.id}">${m.label}</button>`
+  ).join('');
+  modePills.querySelectorAll('.pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.mode;
+      if (selectedModes.includes(id)) {
+        if (selectedModes.length > 1) {
+          selectedModes = selectedModes.filter(x => x !== id);
+        }
+      } else {
+        selectedModes.push(id);
+      }
+      renderSettings();
+      renderQuiz();
+    });
+  });
+}
+
+// =========================================================================
+// KEYBOARD SHORTCUTS
+// =========================================================================
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  const nextBtn = document.getElementById('next-btn');
+  if (nextBtn && (e.key === ' ' || e.key === 'Enter')) {
+    e.preventDefault();
+    renderQuiz();
+    return;
+  }
+
+  const buttons = document.querySelectorAll('.action-btn');
+  if (buttons.length === 0) return;
+
+  const k = e.key.toUpperCase();
+  for (const btn of buttons) {
+    const action = btn.dataset.action;
+    const expected = ACTION_KEYS[action];
+    if (k === expected) {
+      e.preventDefault();
+      btn.click();
+      return;
+    }
+  }
+});
+
+// =========================================================================
+// INIT
+// =========================================================================
+
+document.getElementById('settings-toggle').addEventListener('click', () => {
+  document.getElementById('settings').classList.toggle('open');
+});
+
+document.getElementById('reset-btn').addEventListener('click', async () => {
+  if (confirm('Reset all progress? This cannot be undone.')) {
+    await resetProgress();
+    renderQuiz();
+  }
+});
+
+(async function init() {
+  await loadProgress();
+  renderSettings();
+  renderQuiz();
+})();
+</script>
+</body>
+</html>
